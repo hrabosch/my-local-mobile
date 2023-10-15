@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:my_local_mobile/view/listedView.dart';
+import 'package:my_local_mobile/view/mapView.dart';
 
 void main() {
   runApp(const MyApp());
@@ -31,85 +33,30 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  final MapController _mapController = MapController();
-  static const double _defaultZoomLevel = 5;
-  late LocationPermission permission;
-  LatLng currentLatLng = LatLng(0.0, 0.0);
+  int _selectedView = 0;
 
-  bool isLocServiceEnabled = false;
-  bool permissionGranted = false;
-
-  @override
-  void initState() {
-    initLocation();
-    super.initState();
+  void _onBottomMenuTapped(int index) {
+    setState(() {
+      _selectedView = index;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: FlutterMap(
-        mapController: _mapController,
-        options: MapOptions(
-          center: currentLatLng,
-          zoom: _defaultZoomLevel,
-        ),
-        children: [
-          TileLayer(
-            minZoom: 2,
-            maxZoom: 18,
-            backgroundColor: Colors.black,
-            urlTemplate: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-            subdomains: const ['a', 'b', 'c'],
-          ),
+      body: IndexedStack(
+        index: _selectedView,
+        children: [MapView(), ListedView()],
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        items: const [
+          BottomNavigationBarItem(icon: Icon(Icons.map), label: 'Map'),
+          BottomNavigationBarItem(icon: Icon(Icons.list), label: 'List')
         ],
-        // if isLocServiceEnabled == false -> display warning
+        currentIndex: _selectedView,
+        selectedItemColor: Colors.orange,
+        onTap: _onBottomMenuTapped,
       ),
     );
-  }
-
-  initLocation() async {
-    isLocServiceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (isLocServiceEnabled) {
-      permission = await Geolocator.checkPermission();
-
-      if (permission == LocationPermission.denied) {
-        permission = await Geolocator.requestPermission();
-        if (permission == LocationPermission.denied) {
-          log('Permissions are denied.');
-        } else if (permission == LocationPermission.deniedForever) {
-          log("'Permissions are permanently denied.");
-        } else {
-          permissionGranted = true;
-        }
-      } else {
-        permissionGranted = true;
-      }
-
-      if (permissionGranted) {
-        setState(() {
-          _mapController.move(currentLatLng, _defaultZoomLevel);
-        });
-
-        getLatLng();
-      }
-    } else {
-      log("Location is not enabled.");
-    }
-
-    setState(() {
-      _mapController.move(currentLatLng, _defaultZoomLevel);
-    });
-  }
-
-  getLatLng() async {
-    Position position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high);
-    currentLatLng.latitude = position.latitude;
-    currentLatLng.longitude = position.longitude;
-
-    setState(() {
-      _mapController.move(currentLatLng, _defaultZoomLevel);
-    });
   }
 }
