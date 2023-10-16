@@ -11,6 +11,22 @@ class ListedView extends StatefulWidget {
 class _ListedViewState extends State<ListedView> {
   @override
   Widget build(BuildContext context) {
-    return const Text('TBD');
+    return Column(
+      children: [
+        const Text('Header'),
+        Expanded(
+          child: ListView.builder(
+            itemCount: 100,
+            itemBuilder: (context, index) {
+              return ListTile(
+                title: Text('Item $index'),
+                tileColor: Color.fromARGB(
+                    255, index ~/ 2 + 50, index * 3 + 10, index ~/ 2 + 11),
+              );
+            },
+          ),
+        )
+      ],
+    );
   }
 }
