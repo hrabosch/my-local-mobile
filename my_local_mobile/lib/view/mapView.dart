@@ -30,23 +30,38 @@ class _MapViewState extends State<MapView> {
 
   @override
   Widget build(BuildContext context) {
-    return FlutterMap(
-      mapController: _mapController,
-      options: MapOptions(
-        center: currentLatLng,
-        zoom: _defaultZoomLevel,
-      ),
-      children: [
-        TileLayer(
-          minZoom: 2,
-          maxZoom: 18,
-          backgroundColor: Colors.black,
-          urlTemplate: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-          subdomains: const ['a', 'b', 'c'],
+    return Stack(fit: StackFit.expand, children: [
+      FlutterMap(
+        mapController: _mapController,
+        options: MapOptions(
+          center: currentLatLng,
+          zoom: _defaultZoomLevel,
         ),
-      ],
-      // if isLocServiceEnabled == false -> display warning
-    );
+        children: [
+          TileLayer(
+            minZoom: 2,
+            maxZoom: 18,
+            backgroundColor: Colors.black,
+            urlTemplate: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+            subdomains: const ['a', 'b', 'c'],
+          ),
+        ],
+      ),
+      Align(
+          alignment: Alignment.bottomCenter,
+          child: SizedBox(
+            height: 50.0,
+            child: ListView(
+                scrollDirection: Axis.horizontal,
+                shrinkWrap: true,
+                itemExtent: 70.0,
+                children: [
+                  const Chip(label: Text('data')),
+                  const Chip(label: Text('data')),
+                  const Chip(label: Text('data')),
+                ]),
+          ))
+    ]);
   }
 
   initLocation() async {
@@ -69,18 +84,13 @@ class _MapViewState extends State<MapView> {
 
       if (permissionGranted) {
         setState(() {
-          _mapController.move(currentLatLng, _defaultZoomLevel);
+          log("Permissions granted");
+          getLatLng();
         });
-
-        getLatLng();
       }
     } else {
       log("Location is not enabled.");
     }
-
-    setState(() {
-      _mapController.move(currentLatLng, _defaultZoomLevel);
-    });
   }
 
   getLatLng() async {
